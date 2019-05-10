@@ -27,28 +27,6 @@ db.once("open", function () {
   console.log("mongodb connect")
 })
 
-// session 등록
-const session = require("express-session")
-
-// session 설정
-var connectMongo = require("connect-mongo")
-var MongoStore = connectMongo(session)
-
-var sessionMiddleWare = session({
-  secret: sessionSecret,
-  resave: false,
-  saveUninitialized: true,
-  cookie: {
-    maxAge: 1000 * 60 * 60 * 24 * 14 //지속시간 14일
-  },
-  store: new MongoStore({
-    mongooseConnection: mongoose.connection,
-    ttl: 14 * 24 * 60 * 60
-  })
-})
-app.use(sessionMiddleWare)
-
-
 // connect
 mongoose.connect(mongoURL)
 

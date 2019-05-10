@@ -9,7 +9,10 @@ module.exports = {
    ** Headers of the page
    */
   head: {
-    title: pkg.name,
+    title: "독립출판물 아카이빙",
+    htmlAttrs: {
+      lang: 'ko',
+    },
     meta: [{
         charset: 'utf-8'
       },

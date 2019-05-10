@@ -16,7 +16,7 @@
             <v-btn flat>아이디 / 패스워드 찾기</v-btn>
             <v-spacer />
             <v-btn flat>회원가입</v-btn>
-            <v-btn color="primary" @click="signIn">로그인</v-btn>
+            <v-btn color="primary" @click="signin">로그인</v-btn>
           </v-card-actions>
         </v-card>
       </v-flex>
@@ -49,19 +49,10 @@
       };
     },
     methods: {
-      async signIn() {
+      async signin() {
         // axios 호출
-        const r = await this.$axios.post("/api/account/login", this.input);
-        // --> r.data = { token, user, message }
-        if (r.status === 200) {
-          const {
-            token,
-            user
-          } = r.data
-          this.$store.commit("account/setUser", user)
-          console.log("account", user)
-          localStorage.token = r.data.token;
-          this.$axios.defaults.headers.common["access_token"] = token;
+        const r = await this.$store.dispatch("account/signin", this.input);
+        if (r) {
           this.$router.push("/")
         }
       }

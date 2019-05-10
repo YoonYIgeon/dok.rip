@@ -21,7 +21,7 @@
         <v-btn flat small @click='$router.push("/account/signin")'>로그인</v-btn>
       </v-toolbar-items>
       <v-toolbar-items v-else class="hidden-sm-and-down">
-        <v-btn flat small @click='signOut'>로그아웃</v-btn>
+        <v-btn flat small @click='signout'>로그아웃</v-btn>
       </v-toolbar-items>
     </v-toolbar>
     <v-content>
@@ -52,10 +52,8 @@
       }
     },
     methods: {
-      async signOut() {
-        this.$store.commit("account/setUser", null)
-        localStorage.removeItem("token")
-        this.$axios.defaults.headers.common["access_token"] = undefined;
+      async signout() {
+        this.$store.commit("account/signout", null)
       }
     },
     computed: {

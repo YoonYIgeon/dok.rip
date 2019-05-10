@@ -10,11 +10,18 @@ exports.check = (req, res) => {
   } = req.decoded
 
   User.findOneByUsername(username).then(r => {
-    r.password = ''
-    res.json({
-      success: true,
-      info: r
-    })
+    if (r) {
+      r.password = ''
+      res.json({
+        success: true,
+        info: r
+      })
+    } else {
+      res.status(404).json({
+        success: false,
+        info: "User not fount"
+      })
+    }
   })
 }
 exports.unique = (req, res) => {
@@ -23,7 +30,6 @@ exports.unique = (req, res) => {
   } = req.query
 
   User.findOneByUsername(username).then(r => {
-    console.log(r)
     res.json(r === null ? true : false)
   })
 }
