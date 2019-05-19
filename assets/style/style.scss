@@ -1,0 +1,25 @@
+$primary: #f5b623;
+
+
+.custom {
+  .c-img {
+    .v-responsive {
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      overflow: hidden;
+      opacity: 0.5;
+      transition: opacity .5s;
+      cursor: pointer;
+
+      &:hover {
+        opacity: 1
+      }
+    }
+
+    &:first-child .v-responsive {
+      border-color: $primary;
+      border-width: 3px;
+      opacity: 1;
+    }
+  }
+}
