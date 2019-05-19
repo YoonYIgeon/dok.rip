@@ -1,9 +1,10 @@
 const jwt = require("jsonwebtoken")
 const User = require("../../models/user")
+const Book = require("../../models/book")
 const passwordHash = require("../../lib/passwordHash")
 
 //get
-
+// 정보확인
 exports.check = (req, res) => {
   const {
     username
@@ -24,6 +25,8 @@ exports.check = (req, res) => {
     }
   })
 }
+
+// 중복확인
 exports.unique = (req, res) => {
   const {
     username
@@ -64,7 +67,6 @@ exports.login = (req, res) => {
       throw new Error("일치하는 이메일이 없습니다.")
     } else {
       // user exists, check the password
-      console.log("verify", user.verify(password))
       if (user.verify(password)) {
         // create a promise that generates jwt asynchronously
         const p = new Promise((resolve, reject) => {
@@ -125,6 +127,7 @@ exports.login = (req, res) => {
     .catch(onError)
 }
 
+// 회원가입
 exports.register = (req, res) => {
   let newUser = null
   // create a new user if does not exist
@@ -180,46 +183,45 @@ exports.register = (req, res) => {
     .then(respond)
     .catch(onError)
 }
-exports.setServer = (req, res) => {
+
+// mypage 정보
+exports.mypage = async (req, res) => {
   const {
-    username
+    writerId
   } = req.decoded
-  const serverData = req.body
-  User.findOneByUsername(username).then(user => {
-    user.serverData = serverData
-    user.save().then(r => {
-      res.send(r)
-    })
+
+
+  const list = await Book.find({
+    writerId
+  })
+  const verified = await Book.countDocuments({
+    writerId,
+    verify: true
+  })
+  const verifying = await Book.countDocuments({
+    writerId,
+    verify: false
+  })
+
+  res.send({
+    list,
+    verified,
+    verifying
   })
 }
 
-exports.setDatabase = (req, res) => {
-  const {
-    username
-  } = req.decoded
-  const dbData = req.body
-  User.findOneByUsername(username).then(user => {
-    user.dbData = dbData
-    user.save().then(r => {
-      res.send(r)
-    })
-  })
-}
-
-//patch
+// patch
+// 정보 업데이트
 exports.update = (req, res) => {
   const update = user => {
     if (!user) {
       throw new Error("update failed")
     } else {
-      console.log(1, user)
       user.set(req.body)
-      console.log(2, user)
       user.save((err, r) => {
         if (err) {
           throw new Error(err)
         }
-        console.log(r)
         res.send(r)
       })
     }

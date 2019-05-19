@@ -8,12 +8,11 @@
           </v-card-title>
           <v-card-text>
             <v-form v-model="validate.submit" ref="form">
-              <v-text-field type='text' v-model='input.username' label='이메일' :rules='rules.email' ref='email'
-                @change='validate.isUnique = false'>
+              <v-text-field @input='emailChanged' type='text' v-model='input.username' label='이메일' :rules='rules.email'
+                ref='email' :error-messages="errMsg" :error='!!errMsg'>
                 <template v-slot:append-outer>
                   <v-btn :disabled='!(input.username&&input.username.length)' small :outline='!validate.isUnique'
-                    :readonly='$refs.email && $refs.email.valid' color='primary' class="ma-0" @click='unique'> 중복확인
-                  </v-btn>
+                    :readonly='$refs.email' color='primary' class="ma-0" @click='unique'> 중복확인 </v-btn>
                 </template>
               </v-text-field>
               <v-text-field type='text' v-model='input.name' label='닉네임' :rules='rules.name' />
@@ -26,8 +25,9 @@
               <v-btn flat small v-text='"이용약관"' />
               <v-spacer></v-spacer>
               <v-btn flat v-text='"돌아가기"' />
-              <v-btn color='primary' v-text='"회원가입"' @click='submit'
-                :disabled='!(validate.submit && validate.isUnique)' />
+              <v-btn color='primary' @click='submit'
+                :disabled='!(validate.submit && validate.isUnique) || loading.submit' :loading='loading.submit'>회원가입
+              </v-btn>
             </v-layout>
           </v-card-actions>
         </v-card>
@@ -42,15 +42,15 @@
         rules: {
           email: [v => v && v.length > 0 || "이메일을 입력해주세요.", v =>
             /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i.test(v) ||
-            "이메일 형식이 아닙니다."
+            "이메일 형식이 아닙니다.", v => this.validate.isUnique || "중복 확인이 필요합니다."
           ],
           name: [v => v && v.length > 2 || "닉네임을 3글자 이상 입력해주세요."],
           password: [v => v && v.length > 0 || "패스워드를 입력해주세요.",
-            v => v.length >= 8 || "8글자 이상 입력해주세요.",
+            v => v && v.length >= 8 || "8글자 이상 입력해주세요.",
             v => /^(?=.*[a-zA-Z])(?=.*[0-9]).{8,25}$/.test(v) || "패스워드는 영문 + 숫자 조합으로 작성해주세요."
           ],
           password1: [v => v && v.length > 0 || "패스워드를 입력해주세요.",
-            v => v.length >= 8 || "8글자 이상 입력해주세요.",
+            v => v && v.length >= 8 || "8글자 이상 입력해주세요.",
             v => /^(?=.*[a-zA-Z])(?=.*[0-9]).{8,25}$/.test(v) || "패스워드는 영문 + 숫자 조합으로 작성해주세요.",
             v => v === this.input.password || "두 비밀번호가 다릅니다."
           ]
@@ -64,13 +64,22 @@
         validate: {
           isUnique: false,
           submit: false
-        }
+        },
+        loading: {
+          submit: false
+        },
+        errMsg: null
       }
     },
     methods: {
+      emailChanged() {
+        this.validate.isUnique = false
+        this.errMsg = null
+      },
       async unique() {
         try {
-          if (this.$refs.email.valid && !this.validate.isUnique) {
+          if (!this.validate.isUnique) {
+            console.log("Hello")
             const r = await this.$axios.get("/api/account/unique", {
               params: {
                 username: this.input.username
@@ -78,7 +87,13 @@
             })
             if (r.status === 200) {
               this.validate.isUnique = r.data
-              console.log(r.data)
+              if (r.data) {
+                this.errMsg = null
+                this.$refs.email.validate()
+              } else {
+                this.errMsg = "중복된 아이디입니다."
+              }
+              console.log(this.validate.isUnique)
             } else {
               throw Error(r.data)
             }
@@ -89,6 +104,7 @@
       },
       async submit() {
         try {
+          this.loading.submit = true
           console.log(this.input)
           if (this.$refs.form) {
             const r = await this.$axios.post("/api/account/register", this.input)
@@ -100,6 +116,8 @@
           }
         } catch (err) {
           console.log(err)
+        } finally {
+          this.loading.submit = true
         }
       }
     },

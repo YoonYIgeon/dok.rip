@@ -1,4 +1,5 @@
-const crypto = require("crypto")
+const crypto = require('crypto');
+
 const {
   sessionSecret
 } = require("../config")

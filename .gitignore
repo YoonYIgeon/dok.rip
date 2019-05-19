@@ -74,6 +74,9 @@ dist
 # vuepress build output
 .vuepress/dist
 
+# config
+api/config.js
+
 # Serverless directories
 .serverless
 

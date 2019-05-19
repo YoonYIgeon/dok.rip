@@ -13,6 +13,9 @@ module.exports = {
     htmlAttrs: {
       lang: 'ko',
     },
+    // script: [{
+    //   src: "https://sdk.amazonaws.com/js/aws-sdk-2.384.0.min.js"
+    // }],
     meta: [{
         charset: 'utf-8'
       },
@@ -49,14 +52,15 @@ module.exports = {
    ** Global CSS
    */
   css: [
-    '~/assets/style/app.styl'
+    '~/assets/style/app.styl',
+    '~/assets/style/style.scss'
   ],
 
   /*
    ** Plugins to load before mounting the App
    */
   plugins: [
-    '@/plugins/vuetify'
+    '@/plugins/vuetify',
   ],
 
   /*
@@ -66,7 +70,24 @@ module.exports = {
     // Doc: https://axios.nuxtjs.org/usage
     '@nuxtjs/axios',
     '@nuxtjs/pwa',
+    '@nuxtjs/style-resources',
+    'vuetify-dialog/nuxt'
   ],
+
+  // scss 처리
+  // styleResources: {
+  //   scss: [
+  //     './assets/style/style.scss'
+  //   ]
+  // },
+
+  // vuetify-dialog
+  vuetifyDialog: {
+    property: '$dialog',
+    confirm: {}
+    // ...
+  },
+
   /*
    ** Axios module configuration
    */
@@ -78,6 +99,7 @@ module.exports = {
    ** Build configuration
    */
   build: {
+    vendor: ['browser-image-resizer'],
     transpile: ['vuetify/lib'],
     plugins: [new VuetifyLoaderPlugin()],
     loaders: {

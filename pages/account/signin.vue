@@ -15,8 +15,9 @@
           <v-card-actions>
             <v-btn flat>아이디 / 패스워드 찾기</v-btn>
             <v-spacer />
-            <v-btn flat>회원가입</v-btn>
-            <v-btn color="primary" @click="signin">로그인</v-btn>
+            <v-btn to='/account/signup' flat>회원가입</v-btn>
+            <v-btn color="primary" @click="submit" :disabled='!validate.submit || loading.submit'
+              :loading='loading.submit'>로그인</v-btn>
           </v-card-actions>
         </v-card>
       </v-flex>
@@ -43,17 +44,27 @@
           username: "whaledoll@naver.com",
           password: "todtjd1!"
         },
+        loading: {
+          submit: false
+        },
         validate: {
           submit: false
         }
       };
     },
     methods: {
-      async signin() {
+      async submit() {
         // axios 호출
-        const r = await this.$store.dispatch("account/signin", this.input);
-        if (r) {
-          this.$router.push("/")
+        this.loading.submit = true
+        try {
+          const r = await this.$store.dispatch("account/signin", this.input);
+          if (r) {
+            this.$router.push("/")
+          }
+        } catch (err) {
+          console.log(err)
+        } finally {
+          this.loading.submit = false
         }
       }
     }

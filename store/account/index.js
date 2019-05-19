@@ -2,16 +2,23 @@ import Cookie from 'cookie'
 import Cookies from 'js-cookie'
 
 export const state = () => ({
-  user: null
+  user: null,
+  token: null
 })
 
 export const mutations = {
   setUser(s, p) {
     s.user = p
   },
+  setToken(s, p) {
+    s.token = p
+    this.$axios.defaults.headers.common.authorization = p
+  },
   signout(s) {
     s.user = null
+    this.$axios.defaults.headers.common.authorization = null
     Cookies.remove("dokripToken")
+    this.$router.push("/")
   },
 }
 
@@ -36,11 +43,10 @@ export const actions = {
         Cookies.set("dokripToken", token, {
           expires: 7
         })
+        this.$axios.defaults.headers.common.authorization = token
         commit("setUser", user)
-        console.log("Cookies", Cookies.get("dokripToken"))
         return true
       } else {
-        console.log(r)
         throw new Error()
       }
     } catch (err) {

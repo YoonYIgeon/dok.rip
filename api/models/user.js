@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const AutoIncrement = require('mongoose-sequence')(mongoose)
 const passwordHash = require("../lib/passwordHash")
 
 const Schema = mongoose.Schema
@@ -39,5 +40,8 @@ User.methods.assignAdmin = function () {
   return this.save()
 }
 
+User.plugin(AutoIncrement, {
+  inc_field: 'user'
+});
 
 module.exports = mongoose.model('user', User)
