@@ -85,3 +85,7 @@ api/config.js
 
 # Service worker
 sw.*
+
+
+# aws
+/api/awsConfig.json
