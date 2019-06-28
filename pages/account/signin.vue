@@ -11,6 +11,7 @@
               <v-text-field type="text" v-model="input.username" label="이메일" :rules="rules.email" />
               <v-text-field type="password" v-model="input.password" label="패스워드" :rules="rules.password" />
             </v-form>
+            <div class='text-xs-center error--text' v-text='errMsg'></div>
           </v-card-text>
           <v-card-actions>
             <v-btn flat>아이디 / 패스워드 찾기</v-btn>
@@ -36,8 +37,6 @@
           ],
           password: [
             v => (v && v.length > 0) || "패스워드를 입력해주세요.",
-            v => v.length >= 8 || "8글자 이상 입력해주세요.",
-            v => /^(?=.*[a-zA-Z])(?=.*[0-9]).{8,25}$/.test(v) || "패스워드는 영문 + 숫자 조합으로 작성해주세요."
           ]
         },
         input: {
@@ -49,23 +48,21 @@
         },
         validate: {
           submit: false
-        }
+        },
+        errMsg: null
       };
     },
     methods: {
       async submit() {
         // axios 호출
         this.loading.submit = true
-        try {
-          const r = await this.$store.dispatch("account/signin", this.input);
-          if (r) {
-            this.$router.push("/")
-          }
-        } catch (err) {
-          console.log(err)
-        } finally {
-          this.loading.submit = false
+        const res = await this.$store.dispatch("account/signin", this.input);
+        if (res.success) {
+          this.$router.push("/")
+        } else {
+          this.errMsg = res.message
         }
+        this.loading.submit = false
       }
     }
   };

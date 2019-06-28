@@ -33,27 +33,31 @@ export const actions = {
     commit
   }, input) {
     try {
-      const r = await this.$axios.post("/api/account/login", input)
+      const res = await this.$axios.post("/api/account/login", input)
       // --> r.data = { token, user, message }
-      if (r.status === 200) {
+      if (res.status === 200) {
         const {
           token,
           user
-        } = r.data
+        } = res.data
         Cookies.set("dokripToken", token, {
           expires: 7
         })
         this.$axios.defaults.headers.common.authorization = token
         commit("setUser", user)
-        return true
+        return {
+          success: true
+        }
       } else {
-        throw new Error()
+        throw res
       }
     } catch (err) {
       Cookies.remove("dokripToken")
       commit("setUser", null)
-      console.error(err)
-      return
+      return {
+        success: false,
+        message: err.response.data.message
+      }
     }
   },
   async fetchToken(undefined, payload = "") {

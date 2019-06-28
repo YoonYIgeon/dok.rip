@@ -42,6 +42,14 @@ app.use("/account", accountRouter)
 app.use("/files", filesRouter)
 app.use("/book", bookRouter)
 
+// error handler
+app.use(function (err, req, res, next) {
+  // Do logging and user-friendly error message display
+  console.log("errorHandler", err)
+  // console.error(err.stack);
+  res.status(500).send(err.message || '서버 에러');
+});
+
 module.exports = {
   path: "/api",
   handler: app

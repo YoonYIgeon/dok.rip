@@ -31,7 +31,14 @@ exports.search = async (req, res) => {
 
 //post
 exports.enroll = (req, res) => {
-  Book.create(req.body)
+  const {
+    _id
+  } = req.decoded
+  const newBook = {
+    ...req.body,
+    writerId: _id
+  }
+  Book.create(newBook)
   res.send({
     success: true
   })

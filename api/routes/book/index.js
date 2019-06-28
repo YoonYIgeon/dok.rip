@@ -5,7 +5,7 @@ const c = require("./controller")
 
 router.get("/", c.search)
 
-router.post("/enroll", c.enroll)
+router.post("/enroll", authMiddleware, c.enroll)
 
 
 module.exports = router

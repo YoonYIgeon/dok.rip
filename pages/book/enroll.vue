@@ -172,22 +172,24 @@
       async saveFiles() {
         try {
           const images = this.input.images
-          const url = "/api/files/upload"
-          const data = new FormData
-          images.forEach(image => {
-            data.append("images", image.file)
-          })
-          const config = {
-            header: {
-              "Content-Type": "multipart/form-data"
+          if (images.length) {
+            const url = "/api/files/upload"
+            const data = new FormData
+            images.forEach(image => {
+              data.append("images", image.file)
+            })
+            const config = {
+              header: {
+                "Content-Type": "multipart/form-data"
+              }
             }
-          }
-          const res = await this.$axios.post(url, data, config)
-          if (res.status === 200) {
-            const imgList = res.data.map(img => img.location)
-            return imgList
-          } else {
-            throw Error
+            const res = await this.$axios.post(url, data, config)
+            if (res.status === 200) {
+              const imgList = res.data.map(img => img.location) || []
+              return imgList
+            } else {
+              throw Error
+            }
           }
           // }
         } catch (err) {
@@ -196,9 +198,8 @@
           })
         }
       },
-      async saveData(list) {
-        console.log(list)
-        const thumbnail = list.splice(0, 1)[0]
+      async saveData(list = []) {
+        const thumbnail = list.splice(0, 1)[0] || undefined
         const data = {
           ...this.input,
           authorId: this.user._id,

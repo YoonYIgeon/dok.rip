@@ -3,6 +3,12 @@ const User = require("../../models/user")
 const Book = require("../../models/book")
 const passwordHash = require("../../lib/passwordHash")
 
+const nodemailer = require("nodemailer");
+const {
+  nodeMailerConfig
+} = require("../../config")
+
+
 //get
 // 정보확인
 exports.check = (req, res) => {
@@ -27,13 +33,49 @@ exports.check = (req, res) => {
 }
 
 // 중복확인
-exports.unique = (req, res) => {
+exports.unique = (req, res, next) => {
+  console.log(req.query)
   const {
     username
   } = req.query
 
   User.findOneByUsername(username).then(r => {
-    res.json(r === null ? true : false)
+    if (r === null) {
+      // 등록 가능한 이메일인 경우
+      // 6자리 인증 코드 생성
+      const code = (Math.random() + "").substr(2, 6)
+      // todo 메일 전송
+      try {
+        let transporter = nodemailer.createTransport(nodeMailerConfig);
+
+        let mailOptions = {
+          from: nodeMailerConfig.auth.user, // 발송 메일 주소 (위에서 작성한 gmail 계정 아이디)
+          to: username, // 수신 메일 주소
+          subject: '$[{code}]독립 이메일 인증 메일입니다.', // 제목
+          text: `인증코드는 ${code} 입니다.` // 내용
+        };
+
+        transporter.sendMail(mailOptions, function (err, info) {
+          if (err) {
+            console.log(err);
+          } else {
+            console.log('Email sent: ' + info.response);
+          }
+        });
+
+        res.send({
+          success: true,
+          code
+        })
+      } catch (err) {
+        next(err)
+      }
+    } else {
+      res.status(404).send({
+        success: false,
+        message: "이미 등록된 이메일입니다."
+      })
+    }
   })
 }
 exports.getServer = (req, res) => {
@@ -186,11 +228,7 @@ exports.register = (req, res) => {
 
 // mypage 정보
 exports.mypage = async (req, res) => {
-  const {
-    writerId
-  } = req.decoded
-
-
+  const writerId = req.decoded._id
   const list = await Book.find({
     writerId
   })
@@ -210,20 +248,61 @@ exports.mypage = async (req, res) => {
   })
 }
 
+// password 변경
+exports.updatePassword = (req, res, next) => {
+  const {
+    original,
+    password,
+    password2
+  } = req.body
+  console.log("updatePassword", original, password, password2)
+  const update = user => {
+    try {
+      if (user.password !== passwordHash(original)) {
+        throw new Error("기존 비밀번호가 일치하지 않습니다.")
+      } else if (password !== password2) {
+        // 프론트에서 한 번 확인, 백에서 한 번 더 확인
+        throw new Error("신규 비밀번호가 일치하지 않습니다.")
+      } else {
+        user.set({
+          password: passwordHash(password)
+        })
+        user.save((err, r) => {
+          if (err) {
+            throw new Error(err)
+          }
+          res.send({
+            success: true
+          })
+        })
+      }
+    } catch (err) {
+      console.error(err.stack)
+      next(err)
+    }
+  }
+  User.findOneByUsername(req.decoded.username).then(update)
+}
+
 // patch
 // 정보 업데이트
 exports.update = (req, res) => {
   const update = user => {
-    if (!user) {
-      throw new Error("update failed")
-    } else {
-      user.set(req.body)
-      user.save((err, r) => {
-        if (err) {
-          throw new Error(err)
-        }
-        res.send(r)
-      })
+    try {
+      if (!user) {
+        throw new Error("update failed")
+      } else {
+        user.set(req.body)
+        user.save((err, r) => {
+          if (err) {
+            throw new Error(err)
+          }
+          res.send(r)
+        })
+      }
+    } catch (err) {
+      console.error(err.stack)
+      next(err)
     }
   }
 

@@ -37,6 +37,9 @@ const Book = new Schema({
   description: {
     type: String
   },
+  writerId: {
+    type: String
+  },
   // 
   verify: {
     type: Boolean,
